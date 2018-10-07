@@ -7,11 +7,15 @@
   <script type="text/javascript" src="js/fileupload.js"></script>
 </head>
 <body>
-<input type="file" name="">
-<button onclick="upload">上传</button>
+<input type="file" name="" id="file" multiple>
+<button onclick="upload()">上传</button>
+
 <script type="text/javascript">
+var fileupload = new Fileupload();
 function upload() {
-  alert('上传');
+  var files = document.getElementById("file");
+  var file = files.files
+  fileupload.addFile(file);
 };
 </script>  
 </body>

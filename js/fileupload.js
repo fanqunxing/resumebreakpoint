@@ -11,8 +11,17 @@
 
 var version = '1.0.0';
 
-function Fileupload() {
+function slice(it) {
+  return [].slice.call(it);
+};
 
+function Fileupload () {
+  
+  var _fileList = [];
+
+  this.addFile = function (fileArr) {
+  	_fileList = slice(fileArr);
+  };
 };
 
 Fileupload.prototype.version = version;
