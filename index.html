@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <title>断点续传</title>
   <script type="text/javascript" src="js/lib/jquery.js"></script>
+  <script type="text/javascript" src="js/lib/spark-md5.js"></script>
   <script type="text/javascript" src="js/fileupload.js"></script>
 </head>
 <body>
@@ -12,10 +13,17 @@
 
 <script type="text/javascript">
 var fileupload = new Fileupload();
+fileupload.init({
+	upload: 'upload',
+	query: 'query',
+	merge: 'merge',
+	md5: SparkMD5
+});
 function upload() {
   var files = document.getElementById("file");
   var file = files.files
   fileupload.addFile(file);
+  fileupload.upload();
 };
 </script>  
 </body>
