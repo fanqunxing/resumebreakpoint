@@ -36,7 +36,7 @@ function assert (condition, message) {
 /**
  * 简单Promise
  */
-function Promise(fn) {
+function Promise (fn) {
   this.status = 'pending';
   var _success = function () {};
   var _error = function () {};
@@ -75,32 +75,48 @@ function Promise(fn) {
   fn(resolve, reject);
 }
 
-function httpPost () {
-
+function httpPost (url, file) {
+  return new Promise(function(resolve, reject) {
+	  $.ajax({
+		url: url,
+		type: 'POST',
+		cache: false,
+		data: new FormData(file),
+		processData: false,
+		contentType: false,
+		dataType:"json",
+		success : function(data) {
+		  resolve(data);
+		},
+		error: function (e) {
+		  reject(e);
+		}
+	  });
+  });
 };
 
 function getMd5 (file) {
   return new Promise(function (resolve, reject) {
-  	var fileReader = new FileReader();
-  	try {
-  	  fileReader.readAsArrayBuffer(file);
-  	} catch (e) {
-  	  reject(e);
-  	};
-	fileReader.onload = function (e) {
-  	  var md5 = SparkMD5.ArrayBuffer.hash(e.target.result);
-  	  resolve(md5);
-	};
+    var fileReader = new FileReader();
+    try {
+      fileReader.readAsArrayBuffer(file);
+    } catch (e) {
+      reject(e);
+    };
+    fileReader.onload = function (e) {
+      var md5 = SparkMD5.ArrayBuffer.hash(e.target.result);
+      resolve(md5);
+    };
   });
 };
 
 function fileSlice (file, size) {
   var fileList = [];
   for (var i = 0; i < file.size / size; i++) {
-  	var start = i * size;
-  	var end = (i + 1) * size;
-  	var blob = file.slice(start, end);
-  	fileList.push(blob);
+    var start = i * size;
+    var end = (i + 1) * size;
+    var blob = file.slice(start, end);
+    fileList.push(blob);
   };
   return fileList;
 };
@@ -129,34 +145,41 @@ function Fileupload () {
   var _sparkmd5 = '';
 
   this.init = function (option) {
-  	assert(isObject(option), 'init only accept object');
-  	assert(isString(option['upload']), 'init option\'s props \'upload\' must be string');
-  	assert(isString(option['query']), 'init option\'s props \'query\' must be string');
-  	assert(isString(option['merge']), 'init option\'s props \'merge\' must be string');
-  	assert(isDef(option['md5']), 'init option\'s props \'merge\' must be has');
-  	_uploadFileUrl = option['upload'];
-  	_queryFileUrl = option['query'];
-  	_mergeFileUrl = option['merge'];
+    assert(isObject(option), 'init only accept object');
+    assert(isString(option['upload']), 'init option\'s props \'upload\' must be string');
+    assert(isString(option['query']), 'init option\'s props \'query\' must be string');
+    assert(isString(option['merge']), 'init option\'s props \'merge\' must be string');
+    assert(isDef(option['md5']), 'init option\'s props \'merge\' must be has');
+    _uploadFileUrl = option['upload'];
+    _queryFileUrl = option['query'];
+    _mergeFileUrl = option['merge'];
   };
 
   this.addFile = function (fileArr) {
-  	_fileList = slice(fileArr);
-  	_fileSliceList = fileListSlice(_fileList, 1000);
+    _fileList = slice(fileArr);
+    _fileSliceList = fileListSlice(_fileList, 1000);
   };
 
   this.upload = function () {
-  	// var file = _fileList[0];
-  	// var bloblist = fileSlice(file, 1000);
+    // var file = _fileList[0];
+    // var bloblist = fileSlice(file, 1000);
    //  console.log(bloblist);
    //  bloblist.forEach(function (blob) {
    //    getMd5(blob)
-	  // .then(function(md5) {
-	  // 	console.log(md5);
-	  // })
-	  // .catch(function(e) {
-	  // 	console.log(e);
-	  // });
+    // .then(function(md5) {
+    //   console.log(md5);
+    // })
+    // .catch(function(e) {
+    //   console.log(e);
+    // });
    //  });
+   httpPost(_uploadFileUrl, _fileSliceList[0][0])
+   .then(function(data){
+   	console.log(data);
+   })
+   .catch(function(e){
+   	console.log(e);
+   });
   };
 };
 
