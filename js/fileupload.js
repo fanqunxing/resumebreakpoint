@@ -76,15 +76,16 @@ function Promise (fn) {
 }
 
 function httpPost (url, file) {
+  var formData = new FormData();
+  formData.append('file', file);
   return new Promise(function(resolve, reject) {
 	  $.ajax({
 		url: url,
 		type: 'POST',
 		cache: false,
-		data: new FormData(file),
+		data: formData,
 		processData: false,
-		contentType: false,
-		dataType:"json",
+        contentType: false,
 		success : function(data) {
 		  resolve(data);
 		},
@@ -144,6 +145,37 @@ function Fileupload () {
 
   var _sparkmd5 = '';
 
+
+  function upload() {
+  	var fileList = _fileSliceList[0];
+  	if (fileList.length == 0) {
+  		return;
+  	}
+  	var blob = fileList.pop();
+  	var formData = new FormData();
+  	formData.append('file', blob);
+  	getMd5(blob).then(function(md5) {
+  		formData.append('md5', md5);
+	  	$.ajax({
+			url: _uploadFileUrl,
+			type: 'POST',
+			cache: false,
+			data: formData,
+			processData: false,
+		    contentType: false,
+			success : function(data) {
+			  console.log(data);
+			  upload();
+			},
+			error: function (e) {
+			  console.log(e);
+			  fileList.push(blob);
+			}
+		});
+  	});
+  	
+  }
+
   this.init = function (option) {
     assert(isObject(option), 'init only accept object');
     assert(isString(option['upload']), 'init option\'s props \'upload\' must be string');
@@ -161,25 +193,7 @@ function Fileupload () {
   };
 
   this.upload = function () {
-    // var file = _fileList[0];
-    // var bloblist = fileSlice(file, 1000);
-   //  console.log(bloblist);
-   //  bloblist.forEach(function (blob) {
-   //    getMd5(blob)
-    // .then(function(md5) {
-    //   console.log(md5);
-    // })
-    // .catch(function(e) {
-    //   console.log(e);
-    // });
-   //  });
-   httpPost(_uploadFileUrl, _fileSliceList[0][0])
-   .then(function(data){
-   	console.log(data);
-   })
-   .catch(function(e){
-   	console.log(e);
-   });
+    upload();
   };
 };
 
