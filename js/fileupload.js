@@ -113,7 +113,7 @@ function getMd5 (file) {
 
 function fileSlice (file, size) {
   var fileList = [];
-  for (var i = 0; i < file.size / size; i++) {
+  for (var i = 0, len = file.size / size; i < len; i++) {
     var start = i * size;
     var end = (i + 1) * size;
     var blob = file.slice(start, end);
@@ -145,8 +145,19 @@ function Fileupload () {
 
   var _sparkmd5 = '';
 
+  var _threadId = 0;
 
+  function startThread(num) {
+  	for (var i = 0; i < num; i ++) {
+  		upload();
+  	};
+  }
+
+  
   function upload() {
+  	_threadId++;
+  	console.log('线程' + _threadId + '开始');
+  	console.log(_fileList);
   	var fileList = _fileSliceList[0];
   	if (fileList.length == 0) {
   		return;
@@ -164,12 +175,13 @@ function Fileupload () {
 			processData: false,
 		    contentType: false,
 			success : function(data) {
-			  console.log(data);
-			  upload();
+				console.log('线程' + _threadId + '结束');
+		  		upload();
 			},
 			error: function (e) {
-			  console.log(e);
 			  fileList.push(blob);
+			  console.log('线程' + _threadId + '结束');
+			  upload();
 			}
 		});
   	});
@@ -189,11 +201,11 @@ function Fileupload () {
 
   this.addFile = function (fileArr) {
     _fileList = slice(fileArr);
-    _fileSliceList = fileListSlice(_fileList, 1000);
+    _fileSliceList = fileListSlice(_fileList, 1024*1024*4);
   };
 
   this.upload = function () {
-    upload();
+    startThread(3);
   };
 };
 
