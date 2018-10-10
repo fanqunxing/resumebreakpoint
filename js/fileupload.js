@@ -135,7 +135,7 @@ function Fileupload () {
   
   var _fileList = [];
 
-  var _fileSliceList = [];
+  var _currentSliceList = [];
 
   var _uploadFileUrl = '';
 
@@ -147,26 +147,66 @@ function Fileupload () {
 
   var _threadId = 0;
 
+  var _currentFile = '';
+
+  var _status = '';
+
   function startThread(num) {
+  	_status = 'start';
   	for (var i = 0; i < num; i ++) {
   		upload();
   	};
   }
 
+  function initFileSlice() {
+  	if (_fileList.length === 0) {
+  		_status = 'finsh';
+  		return ;
+  	};
+  	_currentFile = _fileList.pop();
+  	console.log(_currentFile)
+  	_currentSliceList = fileSlice(_currentFile, 1024*1024*4);
+  };
+
+  function mergeFile() {
+  	$.ajax({
+		url: _mergeFileUrl,
+		type: 'POST',
+		data: {
+			name: _currentFile.name
+		},
+		success : function(data) {
+			console.log('线程' + _threadId + '结束');
+	  		upload();
+		},
+		error: function (e) {
+		  _currentSliceList.push(blob);
+		  console.log('线程' + _threadId + '结束');
+		  upload();
+		}
+	});
+  };
+
   
   function upload() {
+  	_status = 'running';
   	_threadId++;
   	console.log('线程' + _threadId + '开始');
-  	console.log(_fileList);
-  	var fileList = _fileSliceList[0];
-  	if (fileList.length == 0) {
+
+  	// 完成
+  	if (_currentSliceList.length == 0) {
+  		initFileSlice();
+  	};
+
+  	if (_status === 'finsh') {
   		return;
   	}
-  	var blob = fileList.pop();
+
+  	var blob = _currentSliceList.pop();
   	var formData = new FormData();
   	formData.append('file', blob);
   	getMd5(blob).then(function(md5) {
-  		formData.append('md5', md5);
+  		formData.append('md5', _currentFile.name + md5);
 	  	$.ajax({
 			url: _uploadFileUrl,
 			type: 'POST',
@@ -179,7 +219,7 @@ function Fileupload () {
 		  		upload();
 			},
 			error: function (e) {
-			  fileList.push(blob);
+			  _currentSliceList.push(blob);
 			  console.log('线程' + _threadId + '结束');
 			  upload();
 			}
@@ -201,10 +241,10 @@ function Fileupload () {
 
   this.addFile = function (fileArr) {
     _fileList = slice(fileArr);
-    _fileSliceList = fileListSlice(_fileList, 1024*1024*4);
   };
 
   this.upload = function () {
+  	initFileSlice();
     startThread(3);
   };
 };
