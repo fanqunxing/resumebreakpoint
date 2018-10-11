@@ -117,7 +117,10 @@ function fileSlice (file, size) {
     var start = i * size;
     var end = (i + 1) * size;
     var blob = file.slice(start, end);
-    fileList.push(blob);
+    fileList.push({
+      index: i,
+      blob: blob
+    });
   };
   return fileList;
 };
@@ -202,30 +205,31 @@ function Fileupload () {
   		return;
   	}
 
-  	var blob = _currentSliceList.pop();
+  	var temp = _currentSliceList.pop();
   	var formData = new FormData();
-  	formData.append('file', blob);
-  	getMd5(blob).then(function(md5) {
-  		formData.append('md5', _currentFile.name + md5);
-	  	$.ajax({
-			url: _uploadFileUrl,
-			type: 'POST',
-			cache: false,
-			data: formData,
-			processData: false,
-		    contentType: false,
-			success : function(data) {
-				console.log('线程' + _threadId + '结束');
-		  		upload();
-			},
-			error: function (e) {
-			  _currentSliceList.push(blob);
-			  console.log('线程' + _threadId + '结束');
-			  upload();
-			}
-		});
-  	});
-  	
+  	formData.append('file', temp.blob);
+    (function(blobTemp) {
+      getMd5(blobTemp.blob).then(function(md5) {
+        formData.append('md5', _currentFile.name + blobTemp.index + '-' + md5);
+        $.ajax({
+          url: _uploadFileUrl,
+          type: 'POST',
+          cache: false,
+          data: formData,
+          processData: false,
+          contentType: false,
+          success : function(data) {
+            console.log('线程' + _threadId + '结束');
+              upload();
+          },
+          error: function (e) {
+            _currentSliceList.push(blobTemp);
+            console.log('线程' + _threadId + '结束');
+            upload();
+          }
+        });
+      });
+    })(temp);
   }
 
   this.init = function (option) {
