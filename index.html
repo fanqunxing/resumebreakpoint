@@ -8,18 +8,33 @@
   <script type="text/javascript" src="./js/fileupload.js"></script>
 </head>
 <body>
-<input type="file" name="" id="file" multiple>
+<input type="file" name="" id="file" multiple> <br/>
+进度：<input type="" name="" id="progess" value="0"> <br/>
 
 <button onclick="upload()">上传</button>
 
 <script type="text/javascript">
+// 装配MD5, 要优化成把加密算法抛出来
+Fileupload.fileSign(SparkMD5.ArrayBuffer.hash);
+
 var fileupload = new Fileupload();
+
 fileupload.init({
+
 	upload: './php/upload.php',
 	query: 'query',
 	merge: './php/merge.php',
-	md5: SparkMD5
+	md5: SparkMD5,
+  progress: function(pre) {
+    console.log(pre);
+    var progress = 100*pre;
+    $('#progess').val(progress.toFixed(2));
+  },
+  complete: function() {
+    alert('上传完成');
+  }
 });
+
 function upload() {
   var files = document.getElementById("file");
   var file = files.files
