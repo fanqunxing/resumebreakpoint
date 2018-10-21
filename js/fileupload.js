@@ -173,21 +173,18 @@ function Fileupload () {
 
   function mergeFile() {
   	$.ajax({
-		url: _mergeFileUrl,
-		type: 'POST',
-		data: {
-			name: _currentFile.name
-		},
-		success : function(data) {
-			console.log('线程' + _threadId + '结束');
-	  		upload();
-		},
-		error: function (e) {
-		  _currentSliceList.push(blob);
-		  console.log('线程' + _threadId + '结束');
-		  upload();
-		}
-	});
+  		url: _mergeFileUrl,
+  		type: 'POST',
+  		data: {
+  			name: _currentFile.name
+  		},
+  		success : function(data) {
+        console.log(_currentFile.name + '合并成功');
+  		},
+  		error: function (e) {
+  		
+  		}
+  	});
   };
 
   
@@ -198,6 +195,7 @@ function Fileupload () {
 
   	// 完成
   	if (_currentSliceList.length == 0) {
+      mergeFile();
   		initFileSlice();
   	};
 
@@ -220,7 +218,7 @@ function Fileupload () {
           contentType: false,
           success : function(data) {
             console.log('线程' + _threadId + '结束');
-              upload();
+            upload();
           },
           error: function (e) {
             _currentSliceList.push(blobTemp);
