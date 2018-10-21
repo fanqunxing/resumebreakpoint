@@ -8,7 +8,8 @@
   <script type="text/javascript" src="./js/fileupload.js"></script>
 </head>
 <body>
-<input type="file" name="" id="file" multiple>
+<input type="file" name="" id="file" multiple> <br/>
+进度：<input type="" name="" id="progess" value="0"> <br/>
 
 <button onclick="upload()">上传123</button>
 <button>ceshi</button>
@@ -20,8 +21,14 @@ fileupload.init({
 	upload: '/code/resumebreakpoint/php/upload.php',
 	query: '/code/resumebreakpoint/php/query.php',
 	merge: '/code/resumebreakpoint/php/merge.php',
-	md5: SparkMD5
+	md5: SparkMD5,
+  progress: function(pre) {
+    console.log(pre);
+    var progress = 100*pre;
+    $('#progess').val(progress.toFixed(2));
+  }
 });
+
 function upload() {
   var files = document.getElementById("file");
   var file = files.files
