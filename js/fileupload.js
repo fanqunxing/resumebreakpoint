@@ -197,6 +197,21 @@ function Fileupload () {
   	});
   };
 
+  function queryFile(md5, fn) {
+    $.ajax({
+      url: _queryFileUrl,
+      type: 'POST',
+      data: {
+        md5: md5
+      },
+      success : function(data) {
+        fn(data);
+      },
+      error: function (e) {
+      
+      }
+    });
+  };
   
   function upload() {
   	_status = 'running';
@@ -216,22 +231,29 @@ function Fileupload () {
   	formData.append('file', temp.blob);
     (function(blobTemp) {
       getMd5(blobTemp.blob).then(function(md5) {
-        formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
-        $.ajax({
-          url: _uploadFileUrl,
-          type: 'POST',
-          cache: false,
-          data: formData,
-          processData: false,
-          contentType: false,
-          success : function(data) {
-            console.log('线程' + _threadId + '成功');
+        queryFile(md5, function(data) {
+          if (data == 1) {
+            console.log('相同');
             upload();
-          },
-          error: function (e) {
-            _currentSliceList.push(blobTemp);
-            console.log('线程' + _threadId + '失败');
-            upload();
+          } else {
+            formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
+            $.ajax({
+              url: _uploadFileUrl,
+              type: 'POST',
+              cache: false,
+              data: formData,
+              processData: false,
+              contentType: false,
+              success : function(data) {
+                console.log('线程' + _threadId + '成功');
+                upload();
+              },
+              error: function (e) {
+                _currentSliceList.push(blobTemp);
+                console.log('线程' + _threadId + '失败');
+                upload();
+              }
+            });
           }
         });
       });
