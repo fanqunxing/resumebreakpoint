@@ -11,6 +11,8 @@
 
 var version = '1.0.0';
 
+var _fileSign_ = null;
+
 function isDef(v) {
   return v !== undefined && v !== null;
 };
@@ -19,9 +21,15 @@ function isObject (obj) {
   return obj !== null && typeof obj === 'object';
 };
 
+function isFunction(it) {
+  return Object.prototype.toString.call(it) === '[object Function]';
+};
+
 function isString (obj){
   return Object.prototype.toString.call(obj) === '[object String]';
 }
+
+function noop() {};
 
 function slice (it) {
   return [].slice.call(it);
@@ -105,7 +113,7 @@ function getMd5 (file) {
       reject(e);
     };
     fileReader.onload = function (e) {
-      var md5 = SparkMD5.ArrayBuffer.hash(e.target.result);
+      var md5 = _fileSign_(e.target.result);
       resolve(md5);
     };
   });
@@ -134,6 +142,10 @@ function fileListSlice (fileList, size) {
   return fileSliceList;
 };
 
+Fileupload.fileSign = function(fileSign) {
+  _fileSign_ = fileSign;
+};
+
 function Fileupload () {
   
   var _fileList = [];
@@ -160,6 +172,12 @@ function Fileupload () {
 
   var _threadNum = 6;
 
+  var _progressFn = noop;
+
+  var _completeFn = noop;
+
+  var _totalNum = 0;
+
   function startThread(num) {
   	_status = 'start';
   	for (var i = 0; i < num; i ++) {
@@ -175,6 +193,7 @@ function Fileupload () {
   	_currentFile = _fileList.pop();
   	console.log(_currentFile)
   	_currentSliceList = fileSlice(_currentFile, 1024*1024*4);
+    _totalNum = _currentSliceList.length;
   };
 
   function mergeFile() {
@@ -190,6 +209,7 @@ function Fileupload () {
   		},
   		success : function(data) {
         console.log(_currentFile.name + '合并成功');
+        _completeFn(_currentFile.name);
   		},
   		error: function (e) {
   		
@@ -217,6 +237,9 @@ function Fileupload () {
   	_status = 'running';
   	_threadId++;
   	console.log('线程' + _threadId + '开始');
+
+     var progress = 1- (_currentSliceList.length / _totalNum);
+    _progressFn.call(this, progress);
   	// 完成
   	if (_currentSliceList.length == 0) {
       _successNum++;
@@ -265,10 +288,12 @@ function Fileupload () {
     assert(isString(option['upload']), 'init option\'s props \'upload\' must be string');
     assert(isString(option['query']), 'init option\'s props \'query\' must be string');
     assert(isString(option['merge']), 'init option\'s props \'merge\' must be string');
-    assert(isDef(option['md5']), 'init option\'s props \'merge\' must be has');
+    assert(isFunction(option['progress']), 'init option\'s props \'progress\' must be function');
     _uploadFileUrl = option['upload'];
     _queryFileUrl = option['query'];
     _mergeFileUrl = option['merge'];
+    _progressFn = option['progress'];
+    _completeFn = option['complete'];
   };
 
   this.addFile = function (fileArr) {
