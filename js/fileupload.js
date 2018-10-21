@@ -154,6 +154,12 @@ function Fileupload () {
 
   var _status = '';
 
+  var _mergeFileList = [];
+
+  var _successNum = 0;
+
+  var _threadNum = 6;
+
   function startThread(num) {
   	_status = 'start';
   	for (var i = 0; i < num; i ++) {
@@ -172,6 +178,10 @@ function Fileupload () {
   };
 
   function mergeFile() {
+    if (_mergeFileList.indexOf(_currentFile.name) > -1) {
+      return;
+    };
+    _mergeFileList.push(_currentFile.name);
   	$.ajax({
   		url: _mergeFileUrl,
   		type: 'POST',
@@ -192,23 +202,21 @@ function Fileupload () {
   	_status = 'running';
   	_threadId++;
   	console.log('线程' + _threadId + '开始');
-
   	// 完成
   	if (_currentSliceList.length == 0) {
-      mergeFile();
-  		initFileSlice();
+      _successNum++;
+      if (_successNum === _threadNum) {
+        mergeFile();
+      }
+      return;
   	};
-
-  	if (_status === 'finsh') {
-  		return;
-  	}
 
   	var temp = _currentSliceList.pop();
   	var formData = new FormData();
   	formData.append('file', temp.blob);
     (function(blobTemp) {
       getMd5(blobTemp.blob).then(function(md5) {
-        formData.append('md5', _currentFile.name + blobTemp.index + '-' + md5);
+        formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
         $.ajax({
           url: _uploadFileUrl,
           type: 'POST',
@@ -217,12 +225,12 @@ function Fileupload () {
           processData: false,
           contentType: false,
           success : function(data) {
-            console.log('线程' + _threadId + '结束');
+            console.log('线程' + _threadId + '成功');
             upload();
           },
           error: function (e) {
             _currentSliceList.push(blobTemp);
-            console.log('线程' + _threadId + '结束');
+            console.log('线程' + _threadId + '失败');
             upload();
           }
         });
@@ -247,7 +255,7 @@ function Fileupload () {
 
   this.upload = function () {
   	initFileSlice();
-    startThread(3);
+    startThread(_threadNum);
   };
 };
 

@@ -5,7 +5,7 @@ if ($_FILES["file"]["error"] > 0)
 }
 else
 {
-	$filename = $_POST["md5"];
+	$filename = $_POST["filename"];
 	move_uploaded_file(
 		$_FILES['file']['tmp_name'],
 	 	getcwd()."/temp/".$filename
