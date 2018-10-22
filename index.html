@@ -20,13 +20,10 @@ Fileupload.fileSign(SparkMD5.ArrayBuffer.hash);
 var fileupload = new Fileupload();
 
 fileupload.init({
-
 	upload: './php/upload.php',
-	query: 'query',
-	merge: './php/merge.php',
-	md5: SparkMD5,
+	query: './php/query.php',
+	merge: './merge.php',
   progress: function(pre) {
-    console.log(pre);
     var progress = 100*pre;
     $('#progess').val(progress.toFixed(2));
   },

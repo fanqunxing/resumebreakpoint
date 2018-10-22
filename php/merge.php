@@ -2,9 +2,9 @@
 
 $hostdir= iconv("utf-8","gbk", getcwd().'\\temp\\') ;
 $filesnames = scandir($hostdir); 
- var_dump($filesnames);
+ // var_dump($filesnames);
 
- exit;
+ // exit;
 
 
 foreach ($filesnames as $name) {
