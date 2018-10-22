@@ -17,6 +17,10 @@ function isDef(v) {
   return v !== undefined && v !== null;
 };
 
+function isTrue(v) {
+  return v === true;
+};
+
 function isObject (obj) {
   return obj !== null && typeof obj === 'object';
 };
@@ -121,19 +125,51 @@ function fileListSlice (fileList, size) {
   return fileSliceList;
 };
 
+function hasProp(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+};
+
+function eachProp(obj, func) {
+  var prop;
+  for (prop in obj) {
+    if (hasProp(obj, prop)) {
+      if (func(obj[prop], prop)) {
+        break;
+      }
+    }
+  }
+};
+
+function mixin(target, source, force) {
+  if (source) {
+    eachProp(source, function (val, prop) {
+      if (isTrue(force) || !hasProp(target, prop)) {
+        target[prop] = val;
+      };
+    });
+  };
+  return target;
+};
+
+var ajaxSetting = {
+  type: 'GET',
+  dataType: 'json',
+  data: {},
+  processData: true
+};
 
 function ajax(options) {
-    options = options || {};
-    options.type = (options.type || "GET").toUpperCase();
-    options.dataType = options.dataType || "json";
-    var params = formatParams(options.data);
-
-    if (window.XMLHttpRequest) {
-        var xhr = new XMLHttpRequest();
-    } else {
-        var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+    options = mixin(options, ajaxSetting);
+    var params = options.data;
+    if (options.processData) {
+      params = formatParams(params);
     }
-
+    var xhr = null;
+    if (window.XMLHttpRequest) {
+        xhr = new XMLHttpRequest();
+    } else {
+        xhr = new ActiveXObject('Microsoft.XMLHTTP');
+    }
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             var status = xhr.status;
@@ -150,7 +186,9 @@ function ajax(options) {
         xhr.send(null);
     } else if (options.type == "POST") {
         xhr.open("POST", options.url, true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        if (options.processData) {
+          xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        }
         xhr.send(params);
     }
 }
@@ -226,7 +264,7 @@ function Fileupload () {
       return;
     };
     _mergeFileList.push(_currentFile.name);
-  	$.ajax({
+  	ajax({
   		url: _mergeFileUrl,
   		type: 'POST',
   		data: {
@@ -236,23 +274,24 @@ function Fileupload () {
         console.log(_currentFile.name + '合并成功');
         _completeFn(_currentFile.name);
   		},
-  		error: function (e) {
+  		fail: function (e) {
   		
   		}
   	});
   };
 
   function queryFile(md5, fn) {
-    $.ajax({
+    ajax({
       url: _queryFileUrl,
       type: 'POST',
+      dataType: "json",
       data: {
         md5: md5
       },
       success : function(data) {
         fn(data);
       },
-      error: function (e) {
+      fail: function (e) {
       
       }
     });
@@ -285,7 +324,7 @@ function Fileupload () {
             upload();
           } else {
             formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
-            $.ajax({
+            ajax({
               url: _uploadFileUrl,
               type: 'POST',
               cache: false,
@@ -296,7 +335,7 @@ function Fileupload () {
                 console.log('线程' + _threadId + '成功');
                 upload();
               },
-              error: function(e) {
+              fail: function(e) {
                 _currentSliceList.push(blobTemp);
                 console.log('线程' + _threadId + '失败');
                 upload();

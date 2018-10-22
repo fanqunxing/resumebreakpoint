@@ -22,7 +22,7 @@ var fileupload = new Fileupload();
 fileupload.init({
 	upload: './php/upload.php',
 	query: './php/query.php',
-	merge: './merge.php',
+	merge: './php/merge.php',
   progress: function(pre) {
     var progress = 100*pre;
     $('#progess').val(progress.toFixed(2));
