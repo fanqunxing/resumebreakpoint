@@ -3,7 +3,6 @@
     if ($_FILES["file"]["error"] > 0) {
         echo "错误：" . $_FILES["file"]["error"] . "<br>";
     } else {
-
         $filename = $_POST["filename"];
         $pattren =  '/[\x{4e00}-\x{9fa5}]/u';
         if (preg_match($pattren,$filename)) { //文件名存在中文字符不让提交;

@@ -1,13 +1,10 @@
 <?php 
 
 $hostdir= iconv("utf-8","gbk", getcwd().'\\temp\\') ;
-$filesnames = scandir($hostdir); 
- // var_dump($filesnames);
-
- // exit;
-
+$filesnames = scandir($hostdir);
 
 foreach ($filesnames as $name) {
+    if (in_array($name,array('.','..'))) continue;
 	$cipath = $hostdir.$name;
 	var_dump($cipath);
 	$str = file_get_contents($cipath);
