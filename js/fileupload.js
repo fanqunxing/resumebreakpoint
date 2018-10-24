@@ -220,7 +220,7 @@
         url: _mergeFileUrl,
         type: 'POST',
         data: {
-          name: _currentFile.name
+          filename: _currentFile.name
         },
         success: function (data) {
           console.log(_currentFile.name + '合并成功');
@@ -238,7 +238,8 @@
         type: 'POST',
         dataType: "json",
         data: {
-          md5: md5
+          id: md5,
+          filename: _currentFile.name
         },
         success: function (data) {
           fn(data);
@@ -264,16 +265,21 @@
         return;
       };
       var temp = _currentSliceList.pop();
-      var formData = new FormData();
-      formData.append('file', temp.blob);
       (function (blobTemp) {
         getMd5(blobTemp.blob, function (md5) {
           queryFile(md5, function (data) {
-            if (data == 1) {
+            if (data.code == 0) {
+              alert('请求错误');
+            }
+            if (data.isExist == 1) {
               console.log('相同');
               upload();
             } else {
-              formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
+              var formData = new FormData();
+              formData.append('file', blobTemp.blob);
+              formData.append('filename', _currentFile.name);
+              formData.append('index', blobTemp.index);
+              formData.append('id', md5);
               ajax({
                 url: _uploadFileUrl,
                 type: 'POST',
