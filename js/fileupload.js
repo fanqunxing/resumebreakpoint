@@ -199,7 +199,7 @@
       for (var i = 0; i < num; i++) {
         upload();
       };
-    }
+    };
 
     function initFileSlice() {
       if (_fileList.length === 0) {
@@ -207,7 +207,6 @@
         return;
       };
       _currentFile = _fileList.pop();
-      console.log(_currentFile)
       _currentSliceList = fileSlice(_currentFile, 1024 * 1024 * 4);
       _totalNum = _currentSliceList.length;
     };
