@@ -25,6 +25,7 @@ fileupload.init({
 	upload: './php/upload.php',
 	query: './php/query.php',
 	merge: './php/merge.php',
+  sliceSize: 4*1024*1024,
   progress: function(pre) {
     var progress = 100*pre;
     $('#progess').val(progress.toFixed(2));

@@ -194,6 +194,8 @@
 
     var _totalNum = 0;
 
+    var _sliceSize = 4 * 1024 * 1024;
+
     function startThread(num) {
       _status = 'start';
       for (var i = 0; i < num; i++) {
@@ -207,7 +209,7 @@
         return;
       };
       _currentFile = _fileList.pop();
-      _currentSliceList = fileSlice(_currentFile, 1024 * 1024 * 4);
+      _currentSliceList = fileSlice(_currentFile, _sliceSize);
       _totalNum = _currentSliceList.length;
     };
 
@@ -314,6 +316,7 @@
       _mergeFileUrl = option['merge'];
       _progressFn = option['progress'];
       _completeFn = option['complete'];
+      _sliceSize = option['sliceSize'] || 4 * 1024 * 1024;
     };
 
     this.addFile = function (fileArr) {
