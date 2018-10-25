@@ -194,12 +194,14 @@
 
     var _totalNum = 0;
 
+    var _sliceSize = 4 * 1024 * 1024;
+
     function startThread(num) {
       _status = 'start';
       for (var i = 0; i < num; i++) {
         upload();
       };
-    }
+    };
 
     function initFileSlice() {
       if (_fileList.length === 0) {
@@ -207,8 +209,7 @@
         return;
       };
       _currentFile = _fileList.pop();
-      console.log(_currentFile)
-      _currentSliceList = fileSlice(_currentFile, 1024 * 1024 * 4);
+      _currentSliceList = fileSlice(_currentFile, _sliceSize);
       _totalNum = _currentSliceList.length;
     };
 
@@ -221,7 +222,7 @@
         url: _mergeFileUrl,
         type: 'POST',
         data: {
-          name: _currentFile.name
+          filename: _currentFile.name
         },
         success: function (data) {
           console.log(_currentFile.name + '合并成功');
@@ -239,7 +240,8 @@
         type: 'POST',
         dataType: "json",
         data: {
-          md5: md5
+          id: md5,
+          filename: _currentFile.name
         },
         success: function (data) {
           fn(data);
@@ -265,16 +267,21 @@
         return;
       };
       var temp = _currentSliceList.pop();
-      var formData = new FormData();
-      formData.append('file', temp.blob);
       (function (blobTemp) {
         getMd5(blobTemp.blob, function (md5) {
           queryFile(md5, function (data) {
-            if (data == 1) {
+            if (data.code == 0) {
+              alert('请求错误');
+            }
+            if (data.isExist == 1) {
               console.log('相同');
               upload();
             } else {
-              formData.append('filename', _currentFile.name + '-' + blobTemp.index + '-' + md5);
+              var formData = new FormData();
+              formData.append('file', blobTemp.blob);
+              formData.append('filename', _currentFile.name);
+              formData.append('index', blobTemp.index);
+              formData.append('id', md5);
               ajax({
                 url: _uploadFileUrl,
                 type: 'POST',
@@ -309,6 +316,7 @@
       _mergeFileUrl = option['merge'];
       _progressFn = option['progress'];
       _completeFn = option['complete'];
+      _sliceSize = option['sliceSize'] || 4 * 1024 * 1024;
     };
 
     this.addFile = function (fileArr) {
