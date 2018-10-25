@@ -12,6 +12,7 @@ foreach ($filesnames as $name) {
 	$nameMd5 = $string_arr[2];
 	if ($nameMd5 == $md5) {
 		// 存在文件
+        var_dump($nameMd5);
 		echo "1";
 		return;
 	}
