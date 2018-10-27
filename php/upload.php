@@ -1,11 +1,5 @@
 <?php
     header("Content-type:text/html;charset=utf-8");
-    //var_dump($_FILES,$_POST);exit;
-    //上传的文件名称这种格式可以吗
-    //$fileName = "文件名称(fileName)|文件序号(index)|文件MD5(md5码)";
-    //比如: 1.txt|2|cdee9e473d48764864028e38936bb62d
-    //file: File, filename: "1.text", index: 2, id: 'cdee9e473d48764864028e38936bb62d' }
-
 
     if ($_FILES["file"]["error"] > 0) {
         $mes = "错误：" . $_FILES["file"]["error"] . "<br>";
@@ -28,13 +22,31 @@
                 'md5'       => $_POST['id'],
             );
             $stockFileInfo = 'fileInfo.txt';
+            $stockAllFileInfoArr = array();
             if (file_exists($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo)) {
+                $stockAllFileInfoArr = file_get_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo);
+                $stockAllFileInfoArr = json_decode($stockAllFileInfoArr,true);
 
+                foreach ($stockAllFileInfoArr as $simpleFile) {
+                    if ($simpleFile['md5'] == $arr['md5']) {
+                        if (file_exists('../temp'.DIRECTORY_SEPARATOR.$arr['fileName'])) {
+                            unlink('../temp'.DIRECTORY_SEPARATOR.$arr['fileName']);
+                        }
+                        echo json_encode(array('message'=>'文件已存在不可以重复上传','code'=>0));exit;
+                    }
+                }
+                if (!is_array($stockAllFileInfoArr) || empty($stockAllFileInfoArr)) {
+                    $stockAllFileInfoArr[] = $arr;
+                    file_put_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo,json_encode($stockAllFileInfoArr));
+                } else {
+                    $stockAllFileInfoArr[] = $arr;
+                    file_put_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo,json_encode($stockAllFileInfoArr));
+                }
             } else {
-                file_put_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo,json_encode($arr));
+                $stockAllFileInfoArr[] = $arr;
+                file_put_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo,json_encode($stockAllFileInfoArr));
             }
         }
-
 
         $isSuccess = move_uploaded_file($_FILES['file']['tmp_name'], $FileDir.DIRECTORY_SEPARATOR.$filename);
         if (!$isSuccess) {

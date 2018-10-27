@@ -5,18 +5,17 @@ $filesnames = scandir($hostdir);
 // 接收MD5码
 $md5 = $_POST["md5"];
 
-foreach ($filesnames as $name) {
-	// 文件存储格式： test.zip-03-dfkjdfjdsfkjdskjfd
-	// 即 文件名称-文件序号-文件md5
-	$string_arr = explode("-", $name);
-	$nameMd5 = $string_arr[2];
-	if ($nameMd5 == $md5) {
-		// 存在文件
-        var_dump($nameMd5);
-		echo "1";
-		return;
-	}
+$stockFileInfo = 'fileInfo.txt';
+
+if (file_exists($filesnames.$stockFileInfo)) {
+    $fileInfos = json_decode(file_get_contents($filesnames.$stockFileInfo));
+    foreach ($fileInfos as $fileInfo) {
+        if ($md5 == $fileInfo['md5']) {
+            echo json_encode(array('message'=>'相同文件已经上传过了','code'=>1));exit;
+        }else {
+            echo json_encode(array('message'=>'文件还没有上传','code'=>0));exit;
+        }
+    }
 }
-// 不存在
-echo "0";
+
 ?>
