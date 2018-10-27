@@ -21,7 +21,7 @@ js对文件切片，分片上传。
 
 请求方式post
 入参：
-```json
+```bash
 {
   file: File,
   filename: "1.text",
