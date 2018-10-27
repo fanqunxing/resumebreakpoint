@@ -1,12 +1,14 @@
 # resumebreakpoint
-##　一、 断点续传方案
+## 一、 断点续传方案
 
 ### 1. javascript
 *作者：fwx426328*
+
 js对文件切片，分片上传。
 
 ### 2. php
 *作者:chinesexiaozhu*
+
 1.查询切片是否在。
 2.上传切片。
 3.合并文件。
