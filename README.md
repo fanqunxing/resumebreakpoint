@@ -21,12 +21,12 @@ js对文件切片，分片上传。
 
 请求方式post
 入参：
-```js
+```json
 {
-	file: File,
-	filename: "1.text",
-	index: 2,
-	id: 'cdee9e473d48764864028e38936bb62d'
+  file: File,
+  filename: "1.text",
+  index: 2,
+  id: 'cdee9e473d48764864028e38936bb62d'
 }
 ```
 |参数|含义|
@@ -39,7 +39,7 @@ js对文件切片，分片上传。
 返回值:
 ```js
 {
-	code: '1'
+  code: '1'
 }
 ```
 
@@ -56,7 +56,7 @@ js对文件切片，分片上传。
 入参:
 ```js
 {
-	filename: "1.text"
+  filename: "1.text"
 }
 ```
 |参数|含义|
@@ -67,7 +67,7 @@ js对文件切片，分片上传。
 返回值：
 ```js
 {
-	code: '1'
+  code: '1'
 }
 ```
 |参数|含义|
@@ -82,8 +82,8 @@ js对文件切片，分片上传。
 入参：
 ```js
 {
-	id: 'cdee9e473d48764864028e38936bb62d',
-	filename: "1.text"
+  id: "cdee9e473d48764864028e38936bb62d",
+  filename: "1.text"
 }
 ```
 |参数|含义|
@@ -94,8 +94,8 @@ js对文件切片，分片上传。
 返回值：
 ```js
 {
-	code: '1',
-	isExist: '1'
+  code: 1,
+  isExist: 1
 }
 ```
 
