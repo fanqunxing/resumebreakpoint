@@ -7,7 +7,7 @@
 js对文件切片，分片上传。
 
 ### 2. php
-*作者:chinesexiaozhu*
+*作者：chinesexiaozhu*
 
 1.查询切片是否在。
 2.上传切片。
