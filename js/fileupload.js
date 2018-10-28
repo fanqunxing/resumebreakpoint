@@ -140,21 +140,25 @@
 
   function Fileupload() {
 
-    var _fileList = [];
-
-    var _currentSliceList = [];
-
     var _uploadFileUrl = '';
 
     var _queryFileUrl = '';
 
     var _mergeFileUrl = '';
 
-    var _threadId = 0;
+    var _isPause = false;
 
-    var _currentFile = '';
+    var _cache = true;
+
+    var _fileList = [];
+
+    var _currentSliceList = [];
 
     var _mergeFileList = [];
+
+    var _threadId = 0;
+
+    var _currentFile = null;
 
     var _successNum = 0;
 
@@ -166,7 +170,6 @@
 
     var _fileSign = noop;
 
-    var _cache = true;
 
     var _onMap = {
       'complete': noop,
@@ -177,7 +180,17 @@
       'progress': noop
     };
 
-    var _isPause = false;
+    function initVariable() {
+      _fileList = [];
+      _currentSliceList = [];
+      _mergeFileList = [];
+      _threadId = 0;
+      _currentFile = null;
+      _successNum = 0;
+      _threadNum = 6;
+      _totalSize = 0;
+    };
+
 
     function getMd5(file, fn) {
       var fileReader = new FileReader();
@@ -355,6 +368,7 @@
     };
 
     this.addFile = function (fileArr) {
+      initVariable();
       _fileList = slice(fileArr);
       _fileList.forEach(function (file) {
         _totalSize += file.size;
