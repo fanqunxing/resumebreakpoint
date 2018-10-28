@@ -190,8 +190,6 @@
 
     var _completeFn = noop;
 
-    var _totalNum = 0;
-
     var _totalSize = 0;
 
     var _sliceSize = 4 * 1024 * 1024;
@@ -237,6 +235,13 @@
     };
 
     function queryFile(md5, fn) {
+      var isExist = window.localStorage.getItem(md5);
+      if (isExist) {
+        return fn({
+          isExist: 1,
+          message: '本地存在'
+        });
+      }
       ajax({
         url: _queryFileUrl,
         type: 'POST',
@@ -277,10 +282,10 @@
         getMd5(blobTemp.blob, function (md5) {
           queryFile(md5, function (data) {
             if (data.code == 0) {
-              alert('请求错误');
+              console.warn('请求错误');
             }
             if (data.isExist == 1) {
-              console.log('相同');
+              _threadId++;
               upload();
             } else {
               var formData = new FormData();
@@ -298,6 +303,7 @@
                 success: function (data) {
                   _threadId++;
                   upload();
+                  window.localStorage.setItem(md5, true);
                 },
                 error: function (e) {
                   _currentSliceList.push(blobTemp);
