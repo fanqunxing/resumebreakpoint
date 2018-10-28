@@ -235,8 +235,8 @@
     };
 
     function queryFile(md5, fn) {
-      var isExist = window.localStorage.getItem(md5);
-      if (isExist) {
+      var isExistMd5 = window.localStorage.getItem(md5);
+      if (isExistMd5 == md5) {
         return fn({
           isExist: 1,
           message: '本地存在'
@@ -303,7 +303,7 @@
                 success: function (data) {
                   _threadId++;
                   upload();
-                  window.localStorage.setItem(md5, true);
+                  window.localStorage.setItem(md5, md5);
                 },
                 error: function (e) {
                   _currentSliceList.push(blobTemp);
