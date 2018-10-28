@@ -12,8 +12,6 @@
 
   var version = '1.0.0';
 
-  var _fileSign_ = noop;
-
   function isDef(v) {
     return v !== undefined && v !== null;
   };
@@ -46,18 +44,6 @@
     }
   };
 
-  function getMd5(file, fn) {
-    var fileReader = new FileReader();
-    try {
-      fileReader.readAsArrayBuffer(file);
-    } catch (e) {
-      fn(e);
-    };
-    fileReader.onload = function (e) {
-      var md5 = _fileSign_(e.target.result);
-      fn(md5);
-    };
-  };
 
   function fileSlice(file, size) {
     var fileList = [];
@@ -151,24 +137,6 @@
     return arr.join("&");
   };
 
-  Fileupload.fileSign = function (fileSign) {
-    _fileSign_ = fileSign;
-  };
-
-
-  var ERORR_CODE_SUCCESS = 'success';
-
-  var ERORR_CODE_FAIL = 'fail';
-
-  var UPLOAD_STATUS_START = 'start';
-
-  var UPLOAD_STATUS_PROCESS = 'process';
-
-  var UPLOAD_STATUS_STEP = 'step';
-
-  var UPLOAD_STATUS_SUCCESS = 'success';
-
-  var UPLOAD_STATUS_FAIL = 'fail';
 
   function Fileupload() {
 
@@ -192,16 +160,41 @@
 
     var _threadNum = 6;
 
-    var _progressFn = noop;
-
-    var _completeFn = noop;
-
     var _totalSize = 0;
 
     var _sliceSize = 4 * 1024 * 1024;
 
-    function startThread(num) {
-      for (var i = 0; i < num; i++) {
+    var _fileSign = noop;
+
+    var _cache = true;
+
+    var _onMap = {
+      'complete': noop,
+      'query': noop,
+      'merge': noop,
+      'upload': noop,
+      'success': noop,
+      'progress': noop
+    };
+
+    var _isPause = false;
+
+    function getMd5(file, fn) {
+      var fileReader = new FileReader();
+      try {
+        fileReader.readAsArrayBuffer(file);
+      } catch (e) {
+        fn(e);
+      };
+      fileReader.onload = function (e) {
+        var md5 = _fileSign(e.target.result);
+        fn(md5);
+      };
+    };
+
+
+    function startThread() {
+      for (var i = 0; i < _threadNum; i++) {
         upload();
       };
     };
@@ -226,27 +219,34 @@
           filename: _currentFile.name
         },
         success: function (data) {
-          _completeFn(_currentFile.name);
+          _onMap.merge.call(this, data);
+          _onMap.complete.call(this, _currentFile.name);
           if (_fileList.length > 0) {
             initFileSlice();
-            startThread(_threadNum);
+            startThread();
           } else {
-            _progressFn.call(this, 1);
+            _onMap.success.call(this, null);
+            _onMap.progress.call(this, 1);
           }
         },
         error: function (e) {
+          _onMap.merge.call(this, e);
           console.error('[Fileupload mergeFile]' + e);
         }
       });
     };
 
     function queryFile(md5, fn) {
-      var isExistMd5 = window.localStorage.getItem(md5);
-      if (isExistMd5 == md5) {
-        return fn({
-          isExist: 1,
-          message: '本地存在'
-        });
+      if (_cache) {
+        var isExistMd5 = window.localStorage.getItem(md5);
+        if (isExistMd5 == md5) {
+          var msg = {
+            isExist: 1,
+            message: '本地存在'
+          };
+          _onMap.query.call(this, msg);
+          return fn(msg);
+        };
       }
       ajax({
         url: _queryFileUrl,
@@ -257,9 +257,11 @@
           filename: _currentFile.name
         },
         success: function (data) {
+          _onMap.query.call(this, data);
           fn(data);
         },
         error: function (e) {
+          _onMap.query.call(this, e);
           console.error('[Fileupload queryFile]' + e);
         }
       });
@@ -273,8 +275,20 @@
       return progress;
     };
 
+    var uploadtimer = null;
     function upload() {
-      _progressFn.call(this, getProgress());
+      if (_isPause) {
+        clearTimeout(uploadtimer);
+        uploadtimer = setTimeout(function() {
+          console.log('暂停');
+          startThread();
+        }, 300);
+        if (uploadtimer) {
+          return;
+        }
+      } 
+
+      _onMap.progress.call(this, getProgress());
       if (_currentSliceList.length == 0) {
         _successNum++;
         if (_successNum === _threadNum) {
@@ -283,6 +297,7 @@
         }
         return;
       };
+      
       var temp = _currentSliceList.pop();
       (function (blobTemp) {
         getMd5(blobTemp.blob, function (md5) {
@@ -308,11 +323,13 @@
                 contentType: false,
                 success: function (data) {
                   _threadId++;
+                  _onMap.upload.call(this, data);
                   upload();
-                  window.localStorage.setItem(md5, md5);
+                  _cache && window.localStorage.setItem(md5, md5);
                 },
                 error: function (e) {
                   _currentSliceList.push(blobTemp);
+                  _onMap.upload.call(this, data);
                   upload();
                   console.log('[Fileupload upload fail, try again]');
                 }
@@ -323,17 +340,17 @@
       })(temp);
     }
 
-    this.init = function (option) {
-      assert(isObject(option), 'init only accept object');
-      assert(isString(option['upload']), 'init option\'s props \'upload\' must be string');
-      assert(isString(option['query']), 'init option\'s props \'query\' must be string');
-      assert(isString(option['merge']), 'init option\'s props \'merge\' must be string');
-      assert(isFunction(option['progress']), 'init option\'s props \'progress\' must be function');
+    this.set = function (option) {
+      assert(isObject(option), 'set only accept object');
+      assert(isString(option['upload']), 'set option\'s props \'upload\' must be string');
+      assert(isString(option['query']), 'set option\'s props \'query\' must be string');
+      assert(isString(option['merge']), 'set option\'s props \'merge\' must be string');
+      assert(isFunction(option['fileSign']), 'set option\'s props \'merge\' must be function')
       _uploadFileUrl = option['upload'];
       _queryFileUrl = option['query'];
       _mergeFileUrl = option['merge'];
-      _progressFn = option['progress'];
-      _completeFn = option['complete'];
+      _fileSign = option['fileSign'];
+      _cache = isDef(option['cache']) ? Boolean(option['cache']) : _cache;
       _sliceSize = option['sliceSize'] || 4 * 1024 * 1024;
     };
 
@@ -346,8 +363,21 @@
 
     this.upload = function () {
       initFileSlice();
-      startThread(_threadNum);
+      startThread();
     };
+
+    this.on = function (type, fn) {
+      if (isFunction(fn)) {
+        _onMap[type] = fn;
+      }
+      if (isObject(type)) {
+        _onMap = mixin(type, _onMap);
+      }
+    };
+
+    this.setPause = function(pause) {
+      _isPause = Boolean(pause);
+    }
   };
 
   Fileupload.prototype.version = version;
