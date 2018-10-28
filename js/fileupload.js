@@ -158,7 +158,7 @@
 
     var _successNum = 0;
 
-    var _threadNum = 6;
+    var _threadNum = 1;
 
     var _totalSize = 0;
 

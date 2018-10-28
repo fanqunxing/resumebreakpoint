@@ -23,7 +23,7 @@ fileupload.set({
 	query: './php/query.php',
 	merge: './php/merge.php',
   cache: false,
-  sliceSize: 4 * 1024 * 1024,
+  sliceSize: 4 * 1024,
   fileSign: function(arrayBuffer) {
     return SparkMD5.ArrayBuffer.hash(arrayBuffer);
   }
@@ -37,10 +37,10 @@ fileupload.on({
     alert(filename + '上传完成');
   },
   query: function(data) {
-    console.log(data);
+    //console.log(data);
   },
   merge: function(data) {
-    console.log(data);
+    //console.log(data);
   },
   upload: function(data) {
     console.log(data);
