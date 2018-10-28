@@ -20,6 +20,9 @@ $stockFileInfo = 'fileInfo.txt';
 $fileInfo = file_get_contents($FileDir.DIRECTORY_SEPARATOR.$stockFileInfo);
 $fileInfoArrs = json_decode($fileInfo,true);
 
+//$filesnames = scandir($hostdir);
+
+
 
 foreach ($fileInfoArrs as $key => $fileInfoArr) {
     $arr[$fileInfoArr['index']] =  $key;
@@ -33,12 +36,25 @@ if (!is_dir($createFileStockLocation)) {
     mkdir($createFileStockLocation);
 }
 
+$fp = fopen($createFileStockLocation.DIRECTORY_SEPARATOR.$fileInfoArrs[0]['fileName'],"ab");
+
 // 生成文件;
 foreach ($arr as $index => $value) {
     $tmpFileName = $FileDir.DIRECTORY_SEPARATOR.$fileInfoArrs[$value]['fileName'].$fileInfoArrs[$value]['index'].$fileInfoArrs[$value]['md5'] ;
-    file_put_contents($createFileStockLocation.DIRECTORY_SEPARATOR.$fileInfoArrs[0]['fileName'],$tmpFileName,true);
+    echo $tmpFileName.'<br>';
+    //file_put_contents($createFileStockLocation.DIRECTORY_SEPARATOR.$fileInfoArrs[0]['fileName'],$tmpFileName,FILE_APPEND);
+
+    $handle = fopen($tmpFileName,"rb");
+
+    fwrite($fp,fread($handle,filesize($tmpFileName)));
+
+    fclose($handle);
+
+    unset($handle);
 
 }
+
+fclose($fp);
 
 
 

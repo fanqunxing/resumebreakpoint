@@ -19,12 +19,12 @@
 <script type="text/javascript">
 var fileupload = new Fileupload();
 fileupload.set({
-	upload: './php/upload.php',
-	query: './php/query.php',
-	merge: './php/merge.php',
-  cache: false, // 是否本地缓存MD5
-  sliceSize: 4 * 1024, // 文件尺寸
-  thread: 1, // 线程数
+  upload: './php/upload.php',
+  query: './php/query.php',
+  merge: './php/merge.php',
+  cache: false,
+  sliceSize: 4 * 1024,
+  thread: 1, // 线程
   fileSign: function(arrayBuffer) {
     return SparkMD5.ArrayBuffer.hash(arrayBuffer);
   }
@@ -38,10 +38,10 @@ fileupload.on({
     alert(filename + '上传完成');
   },
   query: function(data) {
-    console.log(data);
+    //console.log(data);
   },
   merge: function(data) {
-    console.log(data);
+    //console.log(data);
   },
   upload: function(data) {
     console.log(data);

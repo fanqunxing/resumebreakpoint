@@ -60,13 +60,17 @@
             }
         }
 
+
         $isSuccess = move_uploaded_file($_FILES['file']['tmp_name'], $FileDir.DIRECTORY_SEPARATOR.$filename);
+
+
+
         if (!$isSuccess) {
             $mes = '文件上传失败';
-            echo json_encode(array('message'=>$mes,'code'=>0));exit;
+            echo json_encode(array('message'=>$mes,'num'=>$i,'code'=>0));exit;
         } else {
             $mes = '文件上传成功';
-            echo json_encode(array('message'=>$mes,'code'=>1));exit;
+            echo json_encode(array('message'=>$mes,'num'=>$i,'code'=>1));exit;
         }
     }
 
