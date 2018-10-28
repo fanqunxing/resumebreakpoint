@@ -138,46 +138,43 @@
   };
 
 
-  function Fileupload() {
+  function Fileupload(option) {
 
-    var _uploadFileUrl = '';
+    assert(isObject(option), 'constructor only accept object');
 
-    var _queryFileUrl = '';
+    assert(isString(option['upload']), 'upload\' must be string');
+    var URL_UPLOAD_FILE =  option['upload'];
 
-    var _mergeFileUrl = '';
+    assert(isString(option['query']), 'query\' must be string');
+    var URL_QUERY_FILE = option['query'];
 
+    assert(isString(option['merge']), 'merge\' must be string');
+    var URL_MERGER_FILE = option['merge'];
+
+    assert(isFunction(option['filesign']), 'filesign\' must be function');
+    var FILE_SIGN_FUN = option['filesign'];
+    
+    var IS_LOACL_CACHE = isDef(option['cache']) ? Boolean(option['cache']) : true;
+
+    var THREAD_NUM = 3;
+
+    var SLICE_SIZE = option['slicesize'] ||  4 * 1024 * 1024;
+    
     var _isPause = false;
-
-    var _cache = true;
-
     var _fileList = [];
-
     var _currentSliceList = [];
-
     var _mergeFileList = [];
-
     var _threadId = 0;
-
     var _currentFile = null;
-
-    var _successNum = 0;
-
-    var _threadNum = 3;
-
+    var _successThreadNum = 0;
     var _totalSize = 0;
-
-    var _sliceSize = 4 * 1024 * 1024;
-
-    var _fileSign = noop;
-
-
     var _onMap = {
-      'complete': noop,
-      'query': noop,
-      'merge': noop,
-      'upload': noop,
-      'success': noop,
-      'progress': noop
+      complete: noop,
+      query: noop,
+      merge: noop,
+      upload: noop,
+      success: noop,
+      progress: noop
     };
 
     function initVariable() {
@@ -186,10 +183,9 @@
       _mergeFileList = [];
       _threadId = 0;
       _currentFile = null;
-      _successNum = 0;
+      _successThreadNum = 0;
       _totalSize = 0;
     };
-
 
     function getMd5(file, fn) {
       var fileReader = new FileReader();
@@ -199,14 +195,14 @@
         fn(e);
       };
       fileReader.onload = function (e) {
-        var md5 = _fileSign(e.target.result);
+        var md5 = FILE_SIGN_FUN(e.target.result);
         fn(md5);
       };
     };
 
 
     function startThread() {
-      for (var i = 0; i < _threadNum; i++) {
+      for (var i = 0; i < THREAD_NUM; i++) {
         upload();
       };
     };
@@ -216,7 +212,7 @@
         return;
       };
       _currentFile = _fileList.pop();
-      _currentSliceList = fileSlice(_currentFile, _sliceSize);
+      _currentSliceList = fileSlice(_currentFile, SLICE_SIZE);
     };
 
     function mergeFile() {
@@ -225,7 +221,7 @@
       };
       _mergeFileList.push(_currentFile.name);
       ajax({
-        url: _mergeFileUrl,
+        url: URL_MERGER_FILE,
         type: 'POST',
         data: {
           filename: _currentFile.name
@@ -249,7 +245,7 @@
     };
 
     function queryFile(md5, fn) {
-      if (_cache) {
+      if (IS_LOACL_CACHE) {
         var isExistMd5 = window.localStorage.getItem(md5);
         if (isExistMd5 == md5) {
           var msg = {
@@ -261,7 +257,7 @@
         };
       }
       ajax({
-        url: _queryFileUrl,
+        url: URL_QUERY_FILE,
         type: 'POST',
         dataType: "json",
         data: {
@@ -280,7 +276,7 @@
     };
 
     function getProgress() {
-      var progress = _threadId * _sliceSize  / _totalSize; 
+      var progress = _threadId * SLICE_SIZE  / _totalSize; 
       if (progress >= 0.99) {
         progress = 0.99;
       }
@@ -302,9 +298,9 @@
 
       _onMap.progress.call(this, getProgress());
       if (_currentSliceList.length == 0) {
-        _successNum++;
-        if (_successNum === _threadNum) {
-          _successNum = 0;
+        _successThreadNum++;
+        if (_successThreadNum === THREAD_NUM) {
+          _successThreadNum = 0;
           mergeFile();
         }
         return;
@@ -327,7 +323,7 @@
               formData.append('index', blobTemp.index);
               formData.append('id', md5);
               ajax({
-                url: _uploadFileUrl,
+                url: URL_UPLOAD_FILE,
                 type: 'POST',
                 cache: false,
                 data: formData,
@@ -337,7 +333,7 @@
                   _threadId++;
                   _onMap.upload.call(this, data);
                   upload();
-                  _cache && window.localStorage.setItem(md5, md5);
+                  IS_LOACL_CACHE && window.localStorage.setItem(md5, md5);
                 },
                 error: function (e) {
                   _currentSliceList.push(blobTemp);
@@ -352,20 +348,7 @@
       })(temp);
     }
 
-    this.set = function (option) {
-      assert(isObject(option), 'set only accept object');
-      assert(isString(option['upload']), 'set option\'s props \'upload\' must be string');
-      assert(isString(option['query']), 'set option\'s props \'query\' must be string');
-      assert(isString(option['merge']), 'set option\'s props \'merge\' must be string');
-      assert(isFunction(option['fileSign']), 'set option\'s props \'merge\' must be function')
-      _uploadFileUrl = option['upload'];
-      _queryFileUrl = option['query'];
-      _mergeFileUrl = option['merge'];
-      _fileSign = option['fileSign'];
-      _cache = isDef(option['cache']) ? Boolean(option['cache']) : _cache;
-      _sliceSize = option['sliceSize'] || 4 * 1024 * 1024;
-      _threadNum = Number(option['thread']) || 3;
-    };
+
 
     this.addFile = function (fileArr) {
       initVariable();
