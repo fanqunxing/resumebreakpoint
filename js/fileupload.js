@@ -306,9 +306,9 @@
         return;
       };
       
-      var temp = _currentSliceList.pop();
-      (function (blobTemp) {
-        getMd5(blobTemp.blob, function (md5) {
+      var blobTemp = _currentSliceList.pop();
+      (function (temp) {
+        getMd5(temp.blob, function (md5) {
           queryFile(md5, function (data) {
             if (data.code == 0) {
               console.warn('请求错误');
@@ -318,9 +318,9 @@
               upload();
             } else {
               var formData = new FormData();
-              formData.append('file', blobTemp.blob);
+              formData.append('file', temp.blob);
               formData.append('filename', _currentFile.name);
-              formData.append('index', blobTemp.index);
+              formData.append('index', temp.index);
               formData.append('id', md5);
               ajax({
                 url: URL_UPLOAD_FILE,
@@ -336,7 +336,7 @@
                   IS_LOACL_CACHE && window.localStorage.setItem(md5, md5);
                 },
                 error: function (e) {
-                  _currentSliceList.push(blobTemp);
+                  _currentSliceList.push(temp);
                   _onMap.upload.call(this, data);
                   upload();
                   console.log('[Fileupload upload fail, try again]');
@@ -345,7 +345,7 @@
             }
           });
         });
-      })(temp);
+      })(blobTemp);
     }
 
 
