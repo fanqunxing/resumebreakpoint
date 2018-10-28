@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>断点续传</title>
+  <script type="text/javascript" src="./js/lib/spark-md5.js"></script>
+  <script type="text/javascript" src="./js/fileupload.js"></script>
+</head>
+<body>
+
+<input type="file" name="" id="file" multiple> <br/>
+进度：<input type="" name="" id="progess" value="0"> <br/>
+
+<button onclick="upload()">上传</button>
+<button onclick="pause(this)">暂停</button>
+
+
+<script type="text/javascript">
+var fileupload = new Fileupload();
+fileupload.set({
+	upload: './php/upload.php',
+	query: './php/query.php',
+	merge: './php/merge.php',
+  cache: false,
+  sliceSize: 4 * 1024 * 1024,
+  fileSign: function(arrayBuffer) {
+    return SparkMD5.ArrayBuffer.hash(arrayBuffer);
+  }
+});
+
+fileupload.on({
+  success: function() {
+    alert('上传完成');
+  },
+  complete: function(filename) {
+    alert(filename + '上传完成');
+  },
+  query: function(data) {
+    console.log(data);
+  },
+  merge: function(data) {
+    console.log(data);
+  },
+  upload: function(data) {
+    console.log(data);
+  },
+  progress: function(progress) {
+    progress = 100 * progress;
+    document.getElementById("progess").value = progress.toFixed(2);
+  }
+});
+
+function upload() {
+  var files = document.getElementById("file");
+  var file = files.files
+  fileupload.addFile(file);
+  fileupload.upload();
+};
+
+
+
+var isPause = 1;
+function pause(self) {
+  fileupload.setPause(isPause);
+  isPause = !isPause;
+  if (isPause) {
+    self.innerHTML = '暂停';
+  } else {
+    self.innerHTML = '继续';
+  }
+}
+
+</script>  
+</body>
+</html>
