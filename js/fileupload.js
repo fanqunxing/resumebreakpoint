@@ -12,7 +12,7 @@
 
   var version = '1.0.0';
 
-  var _fileSign_ = null;
+  var _fileSign_ = noop;
 
   function isDef(v) {
     return v !== undefined && v !== null;
@@ -71,15 +71,6 @@
       });
     };
     return fileList;
-  };
-
-  function fileListSlice(fileList, size) {
-    var fileSliceList = [];
-    fileList.forEach(function (file) {
-      var filebloblist = fileSlice(file, size);
-      fileSliceList.push(filebloblist);
-    });
-    return fileSliceList;
   };
 
   function hasProp(obj, prop) {
@@ -164,6 +155,21 @@
     _fileSign_ = fileSign;
   };
 
+
+  var ERORR_CODE_SUCCESS = 'success';
+
+  var ERORR_CODE_FAIL = 'fail';
+
+  var UPLOAD_STATUS_START = 'start';
+
+  var UPLOAD_STATUS_PROCESS = 'process';
+
+  var UPLOAD_STATUS_STEP = 'step';
+
+  var UPLOAD_STATUS_SUCCESS = 'success';
+
+  var UPLOAD_STATUS_FAIL = 'fail';
+
   function Fileupload() {
 
     var _fileList = [];
@@ -229,7 +235,7 @@
           }
         },
         error: function (e) {
-
+          console.error('[Fileupload mergeFile]' + e);
         }
       });
     };
@@ -254,7 +260,7 @@
           fn(data);
         },
         error: function (e) {
-
+          console.error('[Fileupload queryFile]' + e);
         }
       });
     };
@@ -307,8 +313,8 @@
                 },
                 error: function (e) {
                   _currentSliceList.push(blobTemp);
-                  console.log('线程' + _threadId + '失败');
                   upload();
+                  console.log('[Fileupload upload fail, try again]');
                 }
               });
             }
