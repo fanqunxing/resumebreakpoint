@@ -162,7 +162,7 @@
 
     var _successNum = 0;
 
-    var _threadNum = 1;
+    var _threadNum = 10;
 
     var _totalSize = 0;
 
