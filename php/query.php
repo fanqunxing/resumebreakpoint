@@ -4,7 +4,6 @@ $hostdir= iconv("utf-8","gbk", getcwd().'\\temp\\') ;
 $filesnames = scandir($hostdir); 
 // 接收MD5码
 $md5 = $_POST["md5"];
-
 $stockFileInfo = 'fileInfo.txt';
 
 if (file_exists($filesnames.$stockFileInfo)) {
@@ -17,6 +16,5 @@ if (file_exists($filesnames.$stockFileInfo)) {
         }
     }
 }
-
 
 
