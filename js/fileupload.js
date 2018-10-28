@@ -162,7 +162,7 @@
 
     var _successNum = 0;
 
-    var _threadNum = 6;
+    var _threadNum = 3;
 
     var _totalSize = 0;
 
@@ -187,7 +187,6 @@
       _threadId = 0;
       _currentFile = null;
       _successNum = 0;
-      _threadNum = 6;
       _totalSize = 0;
     };
 
@@ -365,6 +364,7 @@
       _fileSign = option['fileSign'];
       _cache = isDef(option['cache']) ? Boolean(option['cache']) : _cache;
       _sliceSize = option['sliceSize'] || 4 * 1024 * 1024;
+      _threadNum = Number(option['thread']) || 3;
     };
 
     this.addFile = function (fileArr) {

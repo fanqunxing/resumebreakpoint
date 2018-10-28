@@ -22,8 +22,9 @@ fileupload.set({
 	upload: './php/upload.php',
 	query: './php/query.php',
 	merge: './php/merge.php',
-  cache: false,
-  sliceSize: 4 * 1024 * 1024,
+  cache: false, // 是否本地缓存MD5
+  sliceSize: 4 * 1024, // 文件尺寸
+  thread: 1, // 线程数
   fileSign: function(arrayBuffer) {
     return SparkMD5.ArrayBuffer.hash(arrayBuffer);
   }
