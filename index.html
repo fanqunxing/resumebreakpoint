@@ -16,6 +16,7 @@
 
 
 <script type="text/javascript">
+// 装配MD5, 要优化成把加密算法抛出来
 Fileupload.fileSign(SparkMD5.ArrayBuffer.hash);
 
 var fileupload = new Fileupload();
@@ -29,8 +30,8 @@ fileupload.init({
     var progress = 100*pre;
     $('#progess').val(progress.toFixed(2));
   },
-  complete: function() {
-    alert('上传完成');
+  complete: function(filename) {
+    alert(filename + '上传完成');
   }
 });
 

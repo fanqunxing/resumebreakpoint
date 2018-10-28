@@ -180,8 +180,6 @@
 
     var _currentFile = '';
 
-    var _status = '';
-
     var _mergeFileList = [];
 
     var _successNum = 0;
@@ -194,10 +192,11 @@
 
     var _totalNum = 0;
 
+    var _totalSize = 0;
+
     var _sliceSize = 4 * 1024 * 1024;
 
     function startThread(num) {
-      _status = 'start';
       for (var i = 0; i < num; i++) {
         upload();
       };
@@ -205,12 +204,10 @@
 
     function initFileSlice() {
       if (_fileList.length === 0) {
-        _status = 'finsh';
         return;
       };
       _currentFile = _fileList.pop();
       _currentSliceList = fileSlice(_currentFile, _sliceSize);
-      _totalNum = _currentSliceList.length;
     };
 
     function mergeFile() {
@@ -225,8 +222,13 @@
           filename: _currentFile.name
         },
         success: function (data) {
-          console.log(_currentFile.name + '合并成功');
           _completeFn(_currentFile.name);
+          if (_fileList.length > 0) {
+            initFileSlice();
+            startThread(_threadNum);
+          } else {
+            _progressFn.call(this, 1);
+          }
         },
         error: function (e) {
 
@@ -252,16 +254,20 @@
       });
     };
 
+    function getProgress() {
+      var progress = _threadId * _sliceSize  / _totalSize; 
+      if (progress >= 0.99) {
+        progress = 0.99;
+      }
+      return progress;
+    };
+
     function upload() {
-      _status = 'running';
-      _threadId++;
-      console.log('线程' + _threadId + '开始');
-      var progress = 1 - (_currentSliceList.length / _totalNum);
-      _progressFn.call(this, progress);
-      // 完成
+      _progressFn.call(this, getProgress());
       if (_currentSliceList.length == 0) {
         _successNum++;
         if (_successNum === _threadNum) {
+          _successNum = 0;
           mergeFile();
         }
         return;
@@ -290,7 +296,7 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                  console.log('线程' + _threadId + '成功');
+                  _threadId++;
                   upload();
                 },
                 error: function (e) {
@@ -321,6 +327,9 @@
 
     this.addFile = function (fileArr) {
       _fileList = slice(fileArr);
+      _fileList.forEach(function (file) {
+        _totalSize += file.size;
+      });
     };
 
     this.upload = function () {
