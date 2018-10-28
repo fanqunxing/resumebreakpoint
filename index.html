@@ -19,11 +19,12 @@
 <script type="text/javascript">
 var fileupload = new Fileupload();
 fileupload.set({
-	upload: './php/upload.php',
-	query: './php/query.php',
-	merge: './php/merge.php',
+  upload: './php/upload.php',
+  query: './php/query.php',
+  merge: './php/merge.php',
   cache: false,
   sliceSize: 4 * 1024,
+  thread: 1, // 线程
   fileSign: function(arrayBuffer) {
     return SparkMD5.ArrayBuffer.hash(arrayBuffer);
   }
