@@ -7,8 +7,7 @@
     typeof define === 'function' && define.amd ? define(factory) :
     typeof define === 'function' && define.cmd ? define(factory) :
     (global.Fileupload = factory());
-})(this, function () {
-  'use strict';
+})(this, function () { 'use strict';
 
   var version = '1.0.0';
 
@@ -250,7 +249,7 @@
         if (isExistMd5 == md5) {
           var msg = {
             isExist: 1,
-            message: '本地存在'
+            message: 'local exist'
           };
           _onMap.query.call(this, msg);
           return fn(msg);
@@ -288,7 +287,6 @@
       if (_isPause) {
         clearTimeout(uploadtimer);
         uploadtimer = setTimeout(function() {
-          console.log('暂停');
           startThread();
         }, 300);
         if (uploadtimer) {
@@ -311,7 +309,7 @@
         getMd5(temp.blob, function (md5) {
           queryFile(md5, function (data) {
             if (data.code == 0) {
-              console.warn('请求错误');
+              console.warn('[Fileupload upload ajax error]');
             }
             if (data.isExist == 1) {
               _threadId++;
